@@ -30,7 +30,7 @@ If the app has a frontend which Vue as the frontend, adopt a directory structure
 │   └── requirements.txt
 └── frontend
     └── src
-        └── App.vue
+    │    └── App.vue
     ├── main.js
     ├── index.html
     ├── vite.config.js

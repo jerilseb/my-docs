@@ -2,206 +2,19 @@
 
 ### Install via CDN#
 
-You can install @supabase/supabase-js via CDN links.
+You can install @supabase/supabase-js via CDN.
 
 ```
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-//or
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 ```
 
----
+This exposes a global supabase object. You can initialize a new Supabase client using the`createClient()`method.
 
-## Initializing
-
-Create a new client for use in the browser.
-
-You can initialize a new Supabase client using the`createClient()`method.
+```
+const client = supabase.createClient('https://xyzcompany.supabase.co', 'public-anon-key')
+```
 
 The Supabase client is your entrypoint to the rest of the Supabase functionality and is the easiest way to interact with everything we offer within the Supabase ecosystem.
-
-### Parameters
-
-- supabaseUrlRequiredstring
-
-The unique Supabase URL which is supplied when you create a new project in your project dashboard.
-
-- supabaseKeyRequiredstring
-
-The unique Supabase Key which is supplied when you create a new project in your project dashboard.
-
-- optionsOptionalSupabaseClientOptions
-
-```
-import { createClient } from '@supabase/supabase-js'
-// Create a single supabase client for interacting with your database
-const supabase = createClient('https://xyzcompany.supabase.co', 'public-anon-key')
-```
-
----
-
-## TypeScript support
-
-`supabase-js`has TypeScript support for type inference, autocompletion, type-safe queries, and more.
-
-With TypeScript,`supabase-js`detects things like`not null`constraints and generated columns . Nullable columns are typed as`T | null`when you select the column. Generated columns will show a type error when you insert to it.
-
-`supabase-js`also detects relationships between tables. A referenced table with one-to-many relationship is typed as`T[]`. Likewise, a referenced table with many-to-one relationship is typed as`T | null`.
-
-## Generating TypeScript Types#
-
-You can use the Supabase CLI to generate the types . You can also generate the types from the dashboard .
-
-```
-supabase gen types typescript --project-id abcdefghijklmnopqrst > database.types.ts
-```
-
-These types are generated from your database schema. Given a table`public.movies`, the generated types will look like:
-
-```
-create table public.movies (
-  id bigint generated always as identity primary key,
-  name text not null,
-  data jsonb null
-);
-```
-
-```
-export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[]
-export interface Database {
-  public: {
-    Tables: {
-      movies: {
-        Row: {               // the data expected from .select()
-          id: number
-          name: string
-          data: Json | null
-        }
-        Insert: {            // the data to be passed to .insert()
-          id?: never         // generated columns must not be supplied
-          name: string       // `not null` columns with no default must be supplied
-          data?: Json | null // nullable columns can be omitted
-        }
-        Update: {            // the data to be passed to .update()
-          id?: never
-          name?: string      // `not null` columns are optional on .update()
-          data?: Json | null
-        }
-      }
-    }
-  }
-}
-```
-
-## Using TypeScript type definitions#
-
-You can supply the type definitions to`supabase-js`like so:
-
-```
-import { createClient } from '@supabase/supabase-js'
-import { Database } from './database.types'
-const supabase = createClient<Database>(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_ANON_KEY
-)
-```
-
-## Helper types for Tables and Joins#
-
-You can use the following helper types to make the generated TypeScript types easier to use.
-
-Sometimes the generated types are not what you expect. For example, a view's column may show up as nullable when you expect it to be`not null`. Using type-fest , you can override the types like so:
-
-```
-export type Json = // ...
-export interface Database {
-  // ...
-}
-```
-
-```
-import { MergeDeep } from 'type-fest'
-import { Database as DatabaseGenerated } from './database-generated.types'
-export { Json } from './database-generated.types'
-// Override the type for a specific column in a view:
-export type Database = MergeDeep<
-  DatabaseGenerated,
-  {
-    public: {
-      Views: {
-        movies_view: {
-          Row: {
-            // id is a primary key in public.movies, so it must be `not null`
-            id: number
-          }
-        }
-      }
-    }
-  }
->
-```
-
-You can also override the type of an individual successful response if needed:
-
-```
-// Partial type override allows you to only override some of the properties in your results
-const { data } = await supabase.from('countries').select().overrideTypes<Array<{ id: string }>>()
-// For a full replacement of the original return type use the `{ merge: false }` property as second argument
-const { data } = await supabase
-  .from('countries')
-  .select()
-  .overrideTypes<Array<{ id: string }>, { merge: false }>()
-// Use it with `maybeSingle` or `single`
-const { data } = await supabase.from('countries').select().single().overrideTypes<{ id: string }>()
-```
-
-The generated types provide shorthands for accessing tables and enums.
-
-```
-import { Database, Tables, Enums } from "./database.types.ts";
-// Before 😕
-let movie: Database['public']['Tables']['movies']['Row'] = // ...
-// After 😍
-let movie: Tables<'movies'>
-```
-
-### Response types for complex queries#
-
-`supabase-js`always returns a`data`object (for success), and an`error`object (for unsuccessful requests).
-
-These helper types provide the result types from any query, including nested types for database joins.
-
-Given the following schema with a relation between cities and countries, we can get the nested`CountriesWithCities`type:
-
-```
-create table countries (
-  "id" serial primary key,
-  "name" text
-);
-create table cities (
-  "id" serial primary key,
-  "name" text,
-  "country_id" int references "countries"
-);
-```
-
-```
-import { QueryResult, QueryData, QueryError } from '@supabase/supabase-js'
-const countriesWithCitiesQuery = supabase
-  .from("countries")
-  .select(`
-    id,
-    name,
-    cities (
-      id,
-      name
-    )
-  `);
-type CountriesWithCities = QueryData<typeof countriesWithCitiesQuery>;
-const { data, error } = await countriesWithCitiesQuery;
-if (error) throw error;
-const countriesWithCities: CountriesWithCities = data;
-```
 
 ---
 
@@ -225,7 +38,7 @@ The columns to retrieve, separated by commas. Columns can be renamed when return
 Named parameters
 
 ```
-const { data, error } = await supabase
+const { data, error } = await client
   .from('characters')
   .select()
 ```
@@ -251,7 +64,7 @@ The values to insert. Pass an object to insert a single row or an array to inser
 Named parameters
 
 ```
-const { error } = await supabase
+const { error } = await client
   .from('countries')
   .insert({ id: 1, name: 'Mordor' })
 ```
@@ -275,7 +88,7 @@ The values to update with
 Named parameters
 
 ```
-const { error } = await supabase
+const { error } = await client
   .from('instruments')
   .update({ name: 'piano' })
   .eq('id', 1)
@@ -304,7 +117,7 @@ The values to upsert with. Pass an object to upsert a single row or an array to 
 Named parameters
 
 ```
-const { data, error } = await supabase
+const { data, error } = await client
   .from('instruments')
   .upsert({ id: 1, name: 'piano' })
   .select()
@@ -327,7 +140,7 @@ Perform a DELETE on the table or view.
 Named parameters
 
 ```
-const response = await supabase
+const response = await client
   .from('countries')
   .delete()
   .eq('id', 1)
@@ -364,7 +177,7 @@ The arguments to pass to the function call
 Named parameters
 
 ```
-const { data, error } = await supabase.rpc('hello_world')
+const { data, error } = await client.rpc('hello_world')
 ```
 
 ---
@@ -378,11 +191,11 @@ Filters can be used on`select()`,`update()`,`upsert()`, and`delete()`queries.
 If a Postgres function returns a table response, you can also apply filters.
 
 ```
-const { data, error } = await supabase
+const { data, error } = await client
   .from('instruments')
   .select('name, section_id')
   .eq('name', 'violin')    // Correct
-const { data, error } = await supabase
+const { data, error } = await client
   .from('instruments')
   .eq('name', 'violin')    // Incorrect
   .select('name, section_id')
@@ -405,7 +218,7 @@ The column to filter on
 The value to filter with
 
 ```
-const { data, error } = await supabase
+const { data, error } = await client
   .from('characters')
   .select()
   .eq('name', 'Leia')
@@ -428,7 +241,7 @@ The column to filter on
 The value to filter with
 
 ```
-const { data, error } = await supabase
+const { data, error } = await client
   .from('characters')
   .select()
   .neq('name', 'Leia')
@@ -459,7 +272,7 @@ The value to filter with
 - Option 2unknown
 
 ```
-const { data, error } = await supabase
+const { data, error } = await client
   .from('characters')
   .select()
   .gt('id', 2)
@@ -490,7 +303,7 @@ The value to filter with
 - Option 2unknown
 
 ```
-const { data, error } = await supabase
+const { data, error } = await client
   .from('characters')
   .select()
   .gte('id', 2)
@@ -521,7 +334,7 @@ The value to filter with
 - Option 2unknown
 
 ```
-const { data, error } = await supabase
+const { data, error } = await client
   .from('characters')
   .select()
   .lt('id', 2)
@@ -552,7 +365,7 @@ The value to filter with
 - Option 2unknown
 
 ```
-const { data, error } = await supabase
+const { data, error } = await client
   .from('characters')
   .select()
   .lte('id', 2)
@@ -579,7 +392,7 @@ The column to filter on
 The pattern to match with
 
 ```
-const { data, error } = await supabase
+const { data, error } = await client
   .from('characters')
   .select()
   .like('name', '%Lu%')
@@ -606,7 +419,7 @@ The column to filter on
 The pattern to match with
 
 ```
-const { data, error } = await supabase
+const { data, error } = await client
   .from('characters')
   .select()
   .ilike('name', '%lu%')
@@ -637,7 +450,7 @@ The value to filter with
 - Option 2boolean
 
 ```
-const { data, error } = await supabase
+const { data, error } = await client
   .from('countries')
   .select()
   .is('name', null)
@@ -660,7 +473,7 @@ The column to filter on
 The values array to filter with
 
 ```
-const { data, error } = await supabase
+const { data, error } = await client
   .from('characters')
   .select()
   .in('name', ['Leia', 'Han'])
@@ -695,7 +508,7 @@ The jsonb, array, or range value to filter with
 - Option 4Array<unknown>
 
 ```
-const { data, error } = await supabase
+const { data, error } = await client
   .from('issues')
   .select()
   .contains('tags', ['is:open', 'priority:low'])
@@ -730,7 +543,7 @@ The jsonb, array, or range value to filter with
 - Option 4Array<unknown>
 
 ```
-const { data, error } = await supabase
+const { data, error } = await client
   .from('classes')
   .select('name')
   .containedBy('days', ['monday', 'tuesday', 'wednesday', 'friday'])
@@ -757,7 +570,7 @@ The range column to filter on
 The range to filter with
 
 ```
-const { data, error } = await supabase
+const { data, error } = await client
   .from('reservations')
   .select()
   .rangeGt('during', '[2000-01-02 08:00, 2000-01-02 09:00)')
@@ -784,7 +597,7 @@ The range column to filter on
 The range to filter with
 
 ```
-const { data, error } = await supabase
+const { data, error } = await client
   .from('reservations')
   .select()
   .rangeGte('during', '[2000-01-02 08:30, 2000-01-02 09:30)')
@@ -811,7 +624,7 @@ The range column to filter on
 The range to filter with
 
 ```
-const { data, error } = await supabase
+const { data, error } = await client
   .from('reservations')
   .select()
   .rangeLt('during', '[2000-01-01 15:00, 2000-01-01 16:00)')
@@ -838,7 +651,7 @@ The range column to filter on
 The range to filter with
 
 ```
-const { data, error } = await supabase
+const { data, error } = await client
   .from('reservations')
   .select()
   .rangeLte('during', '[2000-01-01 14:00, 2000-01-01 16:00)')
@@ -865,7 +678,7 @@ The range column to filter on
 The range to filter with
 
 ```
-const { data, error } = await supabase
+const { data, error } = await client
   .from('reservations')
   .select()
   .rangeAdjacent('during', '[2000-01-01 12:00, 2000-01-01 13:00)')
@@ -898,7 +711,7 @@ The array or range value to filter with
 - Option 3Array<unknown>
 
 ```
-const { data, error } = await supabase
+const { data, error } = await client
   .from('issues')
   .select('title')
   .overlaps('tags', ['is:closed', 'severity:high'])
@@ -931,7 +744,7 @@ The query text to match with
 Named parameters
 
 ```
-const result = await supabase
+const result = await client
   .from("texts")
   .select("content")
   .textSearch("content", `'eggs' & 'ham'`, {
@@ -956,7 +769,7 @@ The object to filter with, with column names as keys mapped to their filter valu
 - Option 2Record<string, unknown>
 
 ```
-const { data, error } = await supabase
+const { data, error } = await client
   .from('characters')
   .select('name')
   .match({ id: 2, name: 'Leia' })
@@ -1002,7 +815,7 @@ The value to filter with, following PostgREST syntax
 - Option 2unknown
 
 ```
-const { data, error } = await supabase
+const { data, error } = await client
   .from('countries')
   .select()
   .not('name', 'is', null)
@@ -1032,7 +845,7 @@ The filters to use, following PostgREST syntax
 Named parameters
 
 ```
-const { data, error } = await supabase
+const { data, error } = await client
   .from('characters')
   .select('name')
   .or('id.eq.2,name.eq.Han')
@@ -1118,7 +931,7 @@ The operator to filter with, following PostgREST syntax
 The value to filter with, following PostgREST syntax
 
 ```
-const { data, error } = await supabase
+const { data, error } = await client
   .from('characters')
   .select()
   .filter('name', 'in', '("Han","Yoda")')
@@ -1145,7 +958,7 @@ Perform a SELECT on the query result.
 The columns to retrieve, separated by commas
 
 ```
-const { data, error } = await supabase
+const { data, error } = await client
   .from('characters')
   .upsert({ id: 1, name: 'Han Solo' })
   .select()
@@ -1172,7 +985,7 @@ The column to order by
 Named parameters
 
 ```
-const { data, error } = await supabase
+const { data, error } = await client
   .from('characters')
   .select('id, name')
   .order('id', { ascending: false })
@@ -1195,7 +1008,7 @@ The maximum number of rows to return
 Named parameters
 
 ```
-const { data, error } = await supabase
+const { data, error } = await client
   .from('characters')
   .select('name')
   .limit(1)
@@ -1222,7 +1035,7 @@ The last index to which to limit the result
 Named parameters
 
 ```
-const { data, error } = await supabase
+const { data, error } = await client
   .from('countries')
   .select('name')
   .range(0, 1)
@@ -1245,7 +1058,7 @@ The AbortSignal to use for the fetch request
 ```
 const ac = new AbortController()
 ac.abort()
-const { data, error } = await supabase
+const { data, error } = await client
   .from('very_big_table')
   .select()
   .abortSignal(ac.signal)
@@ -1258,7 +1071,7 @@ const { data, error } = await supabase
 Return`data`as a single object instead of an array of objects.
 
 ```
-const { data, error } = await supabase
+const { data, error } = await client
   .from('characters')
   .select('name')
   .limit(1)
@@ -1279,86 +1092,9 @@ One of the following options
 - Option 2ResultOne
 
 ```
-const { data, error } = await supabase
+const { data, error } = await client
   .from('characters')
   .select()
   .eq('name', 'Katniss')
   .maybeSingle()
-```
-
----
-
-## Retrieve as a CSV
-
-Return`data`as a string in CSV format.
-
-### Return Type
-
-string
-
-```
-const { data, error } = await supabase
-  .from('characters')
-  .select()
-  .csv()
-```
-
----
-
-## Override type of successful response
-
-Override the type of the returned`data`.
-
-- Deprecated: use overrideTypes method instead
-
-```
-const { data } = await supabase
-  .from('countries')
-  .select()
-  .returns<Array<MyType>>()
-```
-
----
-
-## Partially override or replace type of successful response
-
-Override the type of the returned`data`field in the response.
-
-```
-const { data } = await supabase
-  .from('countries')
-  .select()
-  .overrideTypes<Array<MyType>, { merge: false }>()
-```
-
----
-
-## Using explain
-
-Return`data`as the EXPLAIN plan for the query.
-
-For debugging slow queries, you can get the Postgres`EXPLAIN`execution plan of a query using the`explain()`method. This works on any query, even for`rpc()`or writes.
-
-Explain is not enabled by default as it can reveal sensitive information about your database. It's best to only enable this for testing environments but if you wish to enable it for production you can provide additional protection by using a`pre-request`function.
-
-Follow the Performance Debugging Guide to enable the functionality on your project.
-
-### Parameters
-
-- optionsRequiredobject
-
-Named parameters
-
-### Return Type
-
-One of the following options
-- Option 1string
-
-- Option 2Array<Record<string, unknown>>
-
-```
-const { data, error } = await supabase
-  .from('characters')
-  .select()
-  .explain()
 ```
