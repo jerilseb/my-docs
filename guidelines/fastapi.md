@@ -67,29 +67,3 @@ app.add_middleware(
     allow_headers=["*"],
 )
 ```
-
-# Important Files
-
----
-
-File: requirements.txt
-
-To get the latest versions of all packages, don't specify a version. For example,
-```
-fastapi
-uvicorn
-python-dotenv
-websockets
-```
-
-File: vite.config.js
-
-Keep it simple
-```
-import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue'
-
-export default defineConfig({
-  plugins: [vue()]
-})
-```
