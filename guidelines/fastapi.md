@@ -39,10 +39,34 @@ If the app has a frontend which Vue as the frontend, adopt a directory structure
 
 # General Guidelines
 
-1. Use python-dotenv package for loading dotfiles
+1. Create a virtualenv named `.venv` inside `backend` directory and install dependencies ino that.
 
-2. No need to create a README file. User will create it manually, if needed
+2. Use python-dotenv package for loading dotfiles
 
+3. No need to create a README file. User will create it manually, if needed
+
+4. Use lifespan for managing app lifecycle
+
+```
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+  ...
+
+app = FastAPI(lifespan=lifespan)
+```
+
+5. Allow all origins, methods and headers in CORS
+```
+from fastapi.middleware.cors import CORSMiddleware
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+```
 
 # Important Files
 
@@ -54,6 +78,7 @@ To get the latest versions of all packages, don't specify a version. For example
 ```
 fastapi
 uvicorn
+python-dotenv
 websockets
 ```
 
