@@ -4,6 +4,16 @@
 npm create vite@latest my-vue-app -- --template vue
 ```
 
+Modify the package.json to add a `build:watch` script.
+
+```json
+  "scripts": {
+    "dev": "vite",
+    "build:watch": "vite build --watch",
+    "build": "vite build",
+  },
+```
+
 # General Guidelines
 
 1. Always use Vue 3 Composition API

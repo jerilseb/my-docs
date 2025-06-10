@@ -21,14 +21,13 @@ from fastapi.staticfiles import StaticFiles
 app.mount("/", StaticFiles(directory="static", html=True), name="static")
 ```
 
-DO NOT use StaticFiles if the app uses a frontend framework like Vue.
-
 ## App with a Vue Frontend
 
 If the app has a frontend which Vue as the frontend, adopt a directory structure as follows.
 
 ```
 ├── .vscode
+│   ├── tasks.json
 │   └── launch.json
 ├── backend
 │   ├── main.py
@@ -73,22 +72,61 @@ app.add_middleware(
 )
 ```
 
-6. Create launch.json to debug FastAPI
+6. Create launch.json and tasks.json to for debugging
+
+launch.json
 ```json
 {
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: Backend",
+            "name": "FastAPI",
             "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/backend/main.py",
             "console": "integratedTerminal",
             "justMyCode": true,
-            "python": "${workspaceFolder}/backend/.venv/bin/python"
+            "python": "${workspaceFolder}/backend/.venv/bin/python",
+            "preLaunchTask": "npm: build:watch"
         }
     ]
 }
+```
+
+tasks.json
+```json
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "npm: build:watch",
+            "type": "npm",
+            "script": "build:watch",
+            "path": "frontend/",
+            "problemMatcher": [
+                {
+                    "base": "$tsc-watch",
+                    "background": {
+                        "activeOnStart": true,
+                        "beginsPattern": "^.*build started.*$",
+                        "endsPattern": "^.*built in \\d+ms\\.$"
+                    }
+                }
+            ],
+            "isBackground": true
+        }
+    ]
+}
+```
+
+Modify the package.json to add a `build:watch` script.
+
+```json
+  "scripts": {
+    "dev": "vite",
+    "build:watch": "vite build --watch",
+    "build": "vite build",
+  },
 ```
 
 # Implementing Login with Google
