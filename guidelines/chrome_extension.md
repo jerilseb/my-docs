@@ -27,7 +27,7 @@ Use the following as a reference on how to structure the project
 
 Use the following code as a reference for the manifest file
 
-```
+```json
 {
     "manifest_version": 3,
     "name": "Chrome Extension v3 Starter",

@@ -16,7 +16,7 @@ npm create vite@latest my-vue-app -- --template vue
 File: vite.config.js
 
 Keep it simple
-```
+```javascript
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 
