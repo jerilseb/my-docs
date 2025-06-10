@@ -46,10 +46,10 @@ To serve static files use the static folder feature.
 ```python
 from fastapi.staticfiles import StaticFiles
 
-app.mount("/", StaticFiles(directory="../frontend/dist", html=True), name="static")
+app.mount("/", StaticFiles(directory="frontend/dist", html=True), name="static")
 ```
 
-# General Guidelines
+# Development Guidelines
 
 1. Create a virtualenv named `.venv` inside `backend` directory and install dependencies ino that.
 
@@ -57,7 +57,9 @@ app.mount("/", StaticFiles(directory="../frontend/dist", html=True), name="stati
 
 3. No need to create a README file. User will create it manually, if needed
 
-4. Use lifespan for managing app lifecycle
+## Setup Lifespan
+
+Use lifespan for managing app lifecycle
 
 ```python
 @asynccontextmanager
@@ -67,7 +69,9 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 ```
 
-5. Allow all origins, methods and headers in CORS
+## Setup CORS
+
+Allow all origins, methods and headers in CORS
 ```python
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -80,7 +84,9 @@ app.add_middleware(
 )
 ```
 
-6. Create launch.json and tasks.json to for debugging
+## Debugging Setup
+
+Create launch.json and tasks.json to for debugging
 
 launch.json
 ```json
@@ -137,11 +143,25 @@ Modify the package.json to add a `build:watch` script.
   },
 ```
 
-7. At the end of `main.py`, add the following section to start the app
+## Uvicorn launch
+
+At the end of `main.py`, add the following section to start the app
 
 ```python
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+```
+
+## Setup API Routes
+
+Use a `/api` prefix for all REST APIs. For example,
+
+```python
+router = APIRouter(prefix="/api")
+
+@router.get("/notes")
+async def get_notes():
+    ...
 ```
 
 # Implementing Login with Google
@@ -152,7 +172,7 @@ Add `python-jose` to the requirements. In the .env file add the following
 # .env file
 GOOGLE_CLIENT_ID="YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com"
 GOOGLE_CLIENT_SECRET="YOUR_GOOGLE_CLIENT_SECRET"
-GOOGLE_REDIRECT_URI="http://localhost:8000/auth/google/callback"
+GOOGLE_REDIRECT_URI="http://localhost:8000/auth/callback"
 ```
 
 Add the following api routes
@@ -221,8 +241,7 @@ async def auth_callback(code: str, db: Session = Depends(get_db)):
         algorithm="HS256"
     )
 
-    frontend_url = "http://localhost:5173"
-    redirect_response = RedirectResponse(url=frontend_url)
+    redirect_response = RedirectResponse(url="/")
     redirect_response.set_cookie(
       key="access_token",
       value=access_token,
