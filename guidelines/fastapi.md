@@ -41,6 +41,14 @@ If the app has a frontend which Vue as the frontend, adopt a directory structure
     └── package.json
 ```
 
+To serve static files use the static folder feature.
+
+```python
+from fastapi.staticfiles import StaticFiles
+
+app.mount("/", StaticFiles(directory="../frontend/dist", html=True), name="static")
+```
+
 # General Guidelines
 
 1. Create a virtualenv named `.venv` inside `backend` directory and install dependencies ino that.
@@ -127,6 +135,13 @@ Modify the package.json to add a `build:watch` script.
     "build:watch": "vite build --watch",
     "build": "vite build",
   },
+```
+
+7. At the end of `main.py`, add the following section to start the app
+
+```python
+if __name__ == "__main__":
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
 ```
 
 # Implementing Login with Google
