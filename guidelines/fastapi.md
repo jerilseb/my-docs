@@ -1,28 +1,5 @@
 # Directory Structure
 
-## App with plain HTML and JS Frontend
-
-If the app has a frontend which uses plain html and javascript, adopt a directory structure like below.
-
-```
-├── .vscode
-│   └── launch.json
-├── main.py
-├── static/
-├── .env.example
-└── requirements.txt
-```
-
-To serve static files use the static folder feature.
-
-```python
-from fastapi.staticfiles import StaticFiles
-
-app.mount("/", StaticFiles(directory="static", html=True), name="static")
-```
-
-## App with a Vue Frontend
-
 If the app has a frontend with Vue, adopt a directory structure as follows.
 
 ```
@@ -32,15 +9,13 @@ If the app has a frontend with Vue, adopt a directory structure as follows.
 ├── backend
 │   ├── main.py
 │   └── requirements.txt
-├── frontend
-│   ├── src
-│   │   └── App.vue
-│   ├── main.js
-│   ├── index.html
-│   ├── vite.config.js
-│   └── package.json
-├── .dockerignore
-└── Dockerfile
+└── frontend
+    ├── src
+    │   └── App.vue
+    ├── main.js
+    ├── index.html
+    ├── vite.config.js
+    └── package.json
 ```
 
 To serve static files use the static folder feature.
@@ -167,51 +142,6 @@ async def get_notes():
     ...
 ```
 
-## Dockerfile setup
-
-We will use multi-stage build for the dockerfile
-
-```dockerfile
-FROM node:lts-slim AS frontend
-
-WORKDIR /frontend
-COPY frontend/package*.json ./
-RUN npm install
-COPY frontend/ ./
-RUN npm run build
-
-
-FROM python:3.12-slim-bookworm
-
-RUN adduser --disabled-password appuser
-
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
-
-WORKDIR /app
-COPY ./backend/requirements.txt ./
-RUN pip install -r requirements.txt
-
-COPY ./ ./
-
-COPY --from=frontend /frontend/dist /frontend/dist
-
-EXPOSE 8000
-USER appuser
-CMD ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000"]
-```
-
-Use a .dockerignore like this
-
-```
-backend/.env
-backend/.venv
-.vscode
-frontend/node_modules
-frontend/dist
-__pycache__
-```
-
 # Implementing Login with Google
 
 Add `python-jose` to the requirements. In the .env file add the following
@@ -316,3 +246,182 @@ onMounted(() => {
 </script>
 ```
 
+# Deploying to Production (Kubernetes)
+
+First we need to create a Dockerfile and helm charts at the root
+
+```
+├── .vscode/
+├── backend/
+├── frontend/
+├── helm/
+│   ├── Chart.yaml
+│   └── values.yaml
+│   └── templates
+│       ├── api.yaml
+│       ├── ingress.yaml
+│       └── namespace.yaml
+├── .dockerignore
+└── Dockerfile
+```
+
+## Dockerfile setup
+
+We will use multi-stage build for the dockerfile
+
+```dockerfile
+FROM node:lts-slim AS frontend
+
+WORKDIR /frontend
+COPY frontend/package*.json ./
+RUN npm install
+COPY frontend/ ./
+RUN npm run build
+
+
+FROM python:3.12-slim-bookworm
+
+RUN adduser --disabled-password appuser
+
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+WORKDIR /app
+COPY ./backend/requirements.txt ./
+RUN pip install -r requirements.txt
+
+COPY ./ ./
+
+COPY --from=frontend /frontend/dist /frontend/dist
+
+EXPOSE 8000
+USER appuser
+CMD ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000"]
+```
+
+Use a .dockerignore like this
+
+```
+backend/.env
+backend/.venv
+.vscode
+frontend/node_modules
+frontend/dist
+__pycache__
+```
+
+## Helm Charts
+
+Given below is are example helm chart files for an app named demo
+
+api.yaml
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo-api-deployment
+  namespace: {{ .Release.Name }}
+spec:
+  selector:
+    matchLabels:
+      app: demo-api
+  replicas: {{ .Values.api.replicas }}
+  template:
+    metadata:
+      labels:
+        app: demo-api
+    spec:
+      tolerations:
+        - key: "lifecycle"
+          operator: "Equal"
+          value: "spot"
+      containers:
+        - name: demo-api
+          image: "{{ .Values.api.image.repository }}:{{ required "api.image.tag is required" .Values.api.image.tag }}"
+          imagePullPolicy: Always
+          command:
+            ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "9999"]
+          ports:
+            - containerPort: 9999
+          envFrom:
+          - secretRef:
+              name: demo-secrets
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: demo-api-service
+  namespace: {{ .Release.Name }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: 9999
+      targetPort: 9999
+  selector:
+    app: demo-api
+```
+
+ingress.yaml
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: demo-api-ingress
+  namespace: {{ .Release.Name }}
+  annotations:
+    cert-manager.io/cluster-issuer: {{ .Values.cert.issuer }}
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: {{ .Values.ingress.host }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: demo-api-service
+                port:
+                  number: 9999
+
+  tls:
+    - hosts:
+        - {{ .Values.ingress.host }}
+      secretName: demo-ingress-tls
+```
+
+namespace.yaml
+```yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ .Release.Name }}
+```
+
+Chart.yaml
+```yaml
+apiVersion: v2
+name: Demo App
+description: A Helm chart for Demo App
+type: application
+version: 0.3.0
+appVersion: "1.16.0"
+```
+
+values.yaml
+```yaml
+environment: production
+
+api:
+    replicas: 1
+    image:
+        repository:
+        tag: latest
+
+ingress:
+    host: 
+
+cert:
+    issuer:
+```
