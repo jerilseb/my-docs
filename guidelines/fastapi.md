@@ -23,7 +23,7 @@ app.mount("/", StaticFiles(directory="static", html=True), name="static")
 
 ## App with a Vue Frontend
 
-If the app has a frontend which Vue as the frontend, adopt a directory structure as follows.
+If the app has a frontend with Vue, adopt a directory structure as follows.
 
 ```
 ├── .vscode
@@ -32,13 +32,15 @@ If the app has a frontend which Vue as the frontend, adopt a directory structure
 ├── backend
 │   ├── main.py
 │   └── requirements.txt
-└── frontend
-    └── src
-    │    └── App.vue
-    ├── main.js
-    ├── index.html
-    ├── vite.config.js
-    └── package.json
+├── frontend
+│   ├── src
+│   │   └── App.vue
+│   ├── main.js
+│   ├── index.html
+│   ├── vite.config.js
+│   └── package.json
+├── .dockerignore
+└── Dockerfile
 ```
 
 To serve static files use the static folder feature.
@@ -46,7 +48,7 @@ To serve static files use the static folder feature.
 ```python
 from fastapi.staticfiles import StaticFiles
 
-app.mount("/", StaticFiles(directory="frontend/dist", html=True), name="static")
+app.mount("/", StaticFiles(directory="../frontend/dist", html=True), name="static")
 ```
 
 # Development Guidelines
@@ -97,9 +99,10 @@ launch.json
             "name": "FastAPI",
             "type": "debugpy",
             "request": "launch",
-            "program": "${workspaceFolder}/backend/main.py",
+            "program": "main.py",
             "console": "integratedTerminal",
             "justMyCode": true,
+            "cwd": "${workspaceFolder}/backend",
             "python": "${workspaceFolder}/backend/.venv/bin/python",
             "preLaunchTask": "npm: build:watch"
         }
@@ -162,6 +165,51 @@ router = APIRouter(prefix="/api")
 @router.get("/notes")
 async def get_notes():
     ...
+```
+
+## Dockerfile setup
+
+We will use multi-stage build for the dockerfile
+
+```dockerfile
+FROM node:lts-slim AS frontend
+
+WORKDIR /frontend
+COPY frontend/package*.json ./
+RUN npm install
+COPY frontend/ ./
+RUN npm run build
+
+
+FROM python:3.12-slim-bookworm
+
+RUN adduser --disabled-password appuser
+
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+WORKDIR /app
+COPY ./backend/requirements.txt ./
+RUN pip install -r requirements.txt
+
+COPY ./ ./
+
+COPY --from=frontend /frontend/dist /frontend/dist
+
+EXPOSE 8000
+USER appuser
+CMD ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000"]
+```
+
+Use a .dockerignore like this
+
+```
+backend/.env
+backend/.venv
+.vscode
+frontend/node_modules
+frontend/dist
+__pycache__
 ```
 
 # Implementing Login with Google
