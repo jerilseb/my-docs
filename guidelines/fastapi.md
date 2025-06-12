@@ -144,27 +144,35 @@ Add the following api routes
 import requests
 from jose import JWTError, jwt
 from datetime import datetime, timedelta, timezone
+from fastapi import Request
 
 @app.get("/auth/google")
-async def login_google():
+async def login_google(request: Request):
+    host = request.headers.get("host")
+    scheme = request.url.scheme
+    redirect_uri = f"{scheme}://{host}/auth/callback"
     auth_url = (
         "https://accounts.google.com/o/oauth2/v2/auth"
         "?response_type=code"
         f"&client_id={GOOGLE_CLIENT_ID}"
-        f"&redirect_uri={GOOGLE_REDIRECT_URI}"
+        f"&redirect_uri={redirect_uri}"
         "&scope=openid%20email%20profile"
     )
+    print(f"Redirecting to Google with URL: {auth_url}")
     return RedirectResponse(auth_url)
 
 
 @app.get("/auth/callback")
-async def auth_callback(code: str, db: Session = Depends(get_db)):
+async def auth_callback(request: Request, code: str):
+    host = request.headers.get("host")
+    scheme = request.url.scheme
+    redirect_uri = f"{scheme}://{host}/auth/callback"
     token_url = "https://oauth2.googleapis.com/token"
     data = {
         "code": code,
         "client_id": GOOGLE_CLIENT_ID,
         "client_secret": GOOGLE_CLIENT_SECRET,
-        "redirect_uri": GOOGLE_REDIRECT_URI,
+        "redirect_uri": redirect_uri,
         "grant_type": "authorization_code",
     }
     response = requests.post(token_url, data=data)
@@ -198,7 +206,7 @@ async def auth_callback(code: str, db: Session = Depends(get_db)):
     access_token = jwt.encode(
         {
             "sub": email,
-            "exp": datetime.now(datetime.timezone.utc) + timedelta(minutes=60 * 12),
+            "exp": datetime.now(timezone.utc) + timedelta(minutes=60 * 12),
         },
         SECRET_KEY,
         algorithm="HS256"
