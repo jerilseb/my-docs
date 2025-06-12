@@ -46,21 +46,6 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 ```
 
-## Setup CORS
-
-Allow all origins, methods and headers in CORS
-```python
-from fastapi.middleware.cors import CORSMiddleware
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-```
-
 ## Debugging Setup
 
 Create launch.json and tasks.json to for debugging
@@ -296,6 +281,10 @@ COPY --from=frontend /frontend/dist /frontend/dist
 
 EXPOSE 8000
 USER appuser
+
+ENV FORWARDED_ALLOW_IPS="*"
+ENV PROXY_HEADERS="true"
+
 CMD ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000"]
 ```
 
