@@ -194,7 +194,7 @@ __pycache__
 
 ## Helm Charts
 
-Given below is are example helm chart files for an app named demo
+Given below is are example helm chart files for an app named demo. Change the name according to your app.
 
 api.yaml
 ```yaml
