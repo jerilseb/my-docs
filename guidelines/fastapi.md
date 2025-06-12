@@ -56,13 +56,17 @@ launch.json
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "FastAPI",
+            "name": "FastAPI (uvicorn)",
             "type": "debugpy",
             "request": "launch",
-            "program": "main.py",
+            "module": "uvicorn",
+            "args": [
+                "main:app",
+                "--reload"
+            ],
+            "cwd": "${workspaceFolder}/backend",
             "console": "integratedTerminal",
             "justMyCode": true,
-            "cwd": "${workspaceFolder}/backend",
             "python": "${workspaceFolder}/backend/.venv/bin/python",
             "preLaunchTask": "npm: build:watch"
         }
@@ -106,14 +110,6 @@ Modify the package.json to add a `build:watch` script.
   },
 ```
 
-## Uvicorn launch
-
-At the end of `main.py`, add the following section to start the app
-
-```python
-if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
-```
 
 ## Setup API Routes
 
@@ -135,7 +131,6 @@ Add `python-jose` to the requirements. In the .env file add the following
 # .env file
 GOOGLE_CLIENT_ID=YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
 GOOGLE_CLIENT_SECRET=YOUR_GOOGLE_CLIENT_SECRET
-GOOGLE_REDIRECT_URI=http://localhost:8000/auth/callback
 ```
 
 Add the following api routes
@@ -285,7 +280,7 @@ RUN pip install -r requirements.txt
 
 COPY ./ ./
 
-COPY --from=frontend /frontend/dist /frontend/dist
+COPY --from=frontend /frontend/dist ./frontend/dist
 
 EXPOSE 8000
 USER appuser
@@ -293,13 +288,14 @@ USER appuser
 ENV FORWARDED_ALLOW_IPS="*"
 ENV PROXY_HEADERS="true"
 
-CMD ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000"]
+WORKDIR /app/backend
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
 ```
 
 Use a .dockerignore like this
 
 ```
-backend/.env
+backend/.env*
 backend/.venv
 .vscode
 frontend/node_modules
@@ -337,7 +333,7 @@ spec:
           image: "{{ .Values.api.image.repository }}:{{ required "api.image.tag is required" .Values.api.image.tag }}"
           imagePullPolicy: Always
           command:
-            ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "9999"]
+            ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "9999"]
           ports:
             - containerPort: 9999
           envFrom:
