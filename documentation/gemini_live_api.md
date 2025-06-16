@@ -1444,17 +1444,18 @@ for (const turn of turns) {
 
 Ephemeral tokens are short-lived authentication tokens for accessing the Gemini API through WebSockets. They are designed to enhance security when you are connecting directly from a user's device to the API (a client-to-server implementation). Like standard API keys, ephemeral tokens can be extracted from client-side applications such as web browsers or mobile apps. But because ephemeral tokens expire quickly and can be restricted, they significantly reduce the security risks in a production environment.
 
-**Note:** Ephemeral tokens are only compatible with Live API at this time. You should use them when accessing the Live API directly from client-side applications to enhance API key security.
+**Note:**
+Ephemeral tokens are only compatible with Live API at this time. You should use them when accessing the Live API directly from client-side applications to enhance API key security.
 
 ## How ephemeral tokens work
 
 Here's how ephemeral tokens work at a high level:
 
-- Your client (e.g., web app) authenticates with your backend.
-- Your backend requests an ephemeral token from Gemini API's provisioning service.
-- Gemini API issues a short-lived token.
-- Your backend sends the token to the client for WebSocket connections to Live API. You can do this by swapping your API key with an ephemeral token.
-- The client then uses the token as if it were an API key.
+-   Your client (e.g., web app) authenticates with your backend.
+-   Your backend requests an ephemeral token from Gemini API's provisioning service.
+-   Gemini API issues a short-lived token.
+-   Your backend sends the token to the client for WebSocket connections to Live API. You can do this by swapping your API key with an ephemeral token.
+-   The client then uses the token as if it were an API key.
 
 This enhances security because even if extracted, the token is short-lived, unlike a long-lived API key deployed client-side. Since the client sends data directly to Gemini, this also improves latency and avoids your backends needing to proxy the real-time data.
 
@@ -1462,54 +1463,66 @@ This enhances security because even if extracted, the token is short-lived, unli
 
 Here is a simplified example of how to get an ephemeral token from Gemini. By default, you'll have 1 minute to start new Live API sessions using the token from this request (`newSessionExpireTime`), and 30 minutes to send messages over that connection (`expireTime`).
 
-```javascript
-import { GoogleGenAI } from "@google/genai";
+On server side, install the  `google-genai` package using the following pip command, or add it to the requirements.txt file.
 
-const client = new GoogleGenAI({ apiKey: "GEMINI_API_KEY" });
-const expireTime = new Date(Date.now() + 30 * 60 * 1000).toISOString(); // Default is 30 mins
-
-const token = await client.authTokens.create({
-  config: {
-    uses: 1, // The default
-    expireTime: expireTime, // Default is 30 mins
-    newSessionExpireTime: new Date(Date.now() + (1 * 60 * 1000)), // Default 1 minute in the future
-    httpOptions: {apiVersion: 'v1alpha'},
-  },
-});
+```
+pip install -q -U google-genai
 ```
 
-For `expireTime` value constraints, defaults, and other field specs, see the API reference. Within the `expireTime` timeframe, you'll need `sessionResumption` to reconnect the call every 10 minutes (this can be done with the same token even if `uses: 1`).
+```python
+import datetime
+from google import genai
 
-It's also possible to lock an ephemeral token to a set of configurations. This might be useful to further improve security of your application and keep your system instructions on the server side.
+now = datetime.datetime.now(tz=datetime.timezone.utc)
 
-```javascript
-import { GoogleGenAI } from "@google/genai";
+client = genai.Client(
+    api_key="GEMINI_API_KEY",
+    http_options={'api_version': 'v1alpha',}
+)
 
-const client = new GoogleGenAI({ apiKey: "GEMINI_API_KEY" });
-const expireTime = new Date(Date.now() + 30 * 60 * 1000).toISOString(); // Default is 30 mins
+token = client.auth_tokens.create(
+    config = {
+    'uses': 1, # The ephemeral token can only be used to start a single session
+    'expire_time': now + datetime.timedelta(minutes=30), # Default is 30 minutes in the future
+    # 'expire_time': '2025-05-17T00:00:00Z',   # Accepts isoformat.
+    'new_session_expire_time': now + datetime.timedelta(minutes=1), # Default 1 minute in the future
+    'http_options': {'api_version': 'v1alpha'},
+  }
+)
 
-const token = await client.authTokens.create({
-    config: {
-        uses: 1, // The default
-        expireTime: expireTime,
-        liveConnectConstraints: {
-            model: 'gemini-2.0-flash-live-001',
-            config: {
-                sessionResumption: {},
-                temperature: 0.7,
-                responseModalities: ['TEXT']
-            }
-        },
-        httpOptions: {
-            apiVersion: 'v1alpha'
+# You'll need to pass the value under token.name back to your client to use it
+```
+
+For `expire_time` value constraints, defaults, and other field specs, see the API reference.
+Within the `expire_time` timeframe, you'll need to use session resumption to reconnect the call every 10 minutes. This is possible with the same token, even if `uses` is set to `1`.
+
+It's also possible to lock an ephemeral token to a set of configurations. This might be useful to further improve the security of your application and keep your system instructions on the server side.
+
+```python
+client = genai.Client(
+    api_key="GEMINI_API_KEY",
+    http_options={'api_version': 'v1alpha',}
+)
+
+token = client.auth_tokens.create(
+    config = {
+    'uses': 1,
+    'live_connect_constraints': {
+        'model': 'gemini-2.0-flash-live-001',
+        'config': {
+            'session_resumption':{},
+            'temperature':0.7,
+            'response_modalities':['TEXT']
         }
+    },
+    'http_options': {'api_version': 'v1alpha'},
     }
-});
+)
 
-// You'll need to pass the value under token.name back to your client to use it
+# You'll need to pass the value under token.name back to your client to use it
 ```
 
-You can also lock a subset of fields, see the SDK documentation for more info.
+You can also lock a subset of fields; see the SDK documentation for more info.
 
 ## Connect to Live API with an ephemeral token
 
@@ -1539,15 +1552,12 @@ async function main() {
 main();
 ```
 
-**Note:** If not using the SDK, note that ephemeral tokens must either be passed in an `access_token` query parameter, or in an HTTP `Authorization` header prefixed by the auth-scheme `Token`. See Get started with Live API for more examples.
+**Note:**
+If not using the SDK, note that ephemeral tokens must either be passed in an `access_token` query parameter, or in an HTTP `Authorization` header prefixed by the `Token` authentication scheme. See Get started with Live API for more examples.
 
 ## Best practices
 
-- Set a short expiration duration using the `expire_time` parameter.
-- Tokens expire, requiring re-initiation of the provisioning process.
-- Verify secure authentication for your own backend. Ephemeral tokens will only be as secure as your backend authentication method.
-- Generally, avoid using ephemeral tokens for backend-to-Gemini connections, as this path is typically considered secure.
-
-## Limitations
-
-Ephemeral tokens are only compatible with Live API at this time.
+-   Set a short expiration duration using the `expire_time` parameter.
+-   Tokens expire, requiring re-initiation of the provisioning process.
+-   Verify secure authentication for your own backend. Ephemeral tokens will only be as secure as your backend authentication method.
+-   Generally, avoid using ephemeral tokens for backend-to-Gemini connections, as this path is typically considered secure.
