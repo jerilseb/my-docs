@@ -870,9 +870,6 @@ By default, the model automatically performs VAD on a continuous audio input str
 When the audio stream is paused for more than a second (for example, because the user switched off the microphone), an `audioStreamEnd` event should be sent to flush any cached audio. The client can resume sending audio data at any time.
 
 ```javascript
-// example audio file to try:
-// URL = "https://storage.googleapis.com/generativeai-downloads/data/hello_are_you_there.pcm"
-// !wget -q $URL -O sample.pcm
 import { GoogleGenAI, Modality } from '@google/genai';
 import * as fs from "node:fs";
 
@@ -1274,86 +1271,25 @@ const config = {
   tools: tools
 }
 
-async function live() {
-  const responseQueue = [];
-
-  async function waitMessage() {
-    let done = false;
-    let message = undefined;
-    while (!done) {
-      message = responseQueue.shift();
-      if (message) {
-        done = true;
-      } else {
-        await new Promise((resolve) => setTimeout(resolve, 0)); // Added delay
-      }
-    }
-    return message;
-  }
-
-  async function handleTurn() {
-    const turns = [];
-    let done = false;
-    while (!done) {
-      const message = await waitMessage();
-      turns.push(message);
-      if (message.serverContent && message.serverContent.turnComplete) {
-        done = true;
-      } else if (message.toolCall) {
-        done = true;
-      }
-    }
-    return turns;
-  }
-
-  const session = await ai.live.connect({
-    model: model,
-    callbacks: {
-      onopen: function () {
-        console.debug('Opened');
-      },
-      onmessage: function (message) {
-        responseQueue.push(message);
-      },
-      onerror: function (e) {
-        console.debug('Error:', e.message);
-      },
-      onclose: function (e) {
-        console.debug('Close:', e.reason);
-      },
+const session = await ai.live.connect({
+  model: model,
+  callbacks: {
+    onopen: function () {
+      console.debug('Opened');
     },
-    config: config,
-  });
+    onmessage: function (message) {
+      responseQueue.push(message);
+    },
+    onerror: function (e) {
+      console.debug('Error:', e.message);
+    },
+    onclose: function (e) {
+      console.debug('Close:', e.reason);
+    },
+  },
+  config: config,
+});
 
-  const inputTurns = 'When did the last Brazil vs. Argentina soccer match happen?';
-  session.sendClientContent({ turns: inputTurns });
-
-  const turns = await handleTurn();
-
-  for (const turn of turns) {
-    if (turn.serverContent && turn.serverContent.modelTurn && turn.serverContent.modelTurn.parts) {
-      for (const part of turn.serverContent.modelTurn.parts) {
-        if (part.text) {
-          console.debug('Received text: %s\n', part.text);
-        }
-        else if (part.executableCode) {
-          console.debug('executableCode: %s\n', part.executableCode.code);
-        }
-        else if (part.codeExecutionResult) {
-          console.debug('codeExecutionResult: %s\n', part.codeExecutionResult.output);
-        }
-      }
-    }
-  }
-
-  session.close();
-}
-
-async function main() {
-  await live().catch((e) => console.error('got error', e));
-}
-
-main();
 ```
 
 ## Combining multiple tools
@@ -1561,3 +1497,173 @@ If not using the SDK, note that ephemeral tokens must either be passed in an `ac
 -   Tokens expire, requiring re-initiation of the provisioning process.
 -   Verify secure authentication for your own backend. Ephemeral tokens will only be as secure as your backend authentication method.
 -   Generally, avoid using ephemeral tokens for backend-to-Gemini connections, as this path is typically considered secure.
+
+
+# Using AudioContext to stream from browser
+
+Following code example demonstrates how to use the browser AudioContext to stream audio inputs and outputs for a live conversation. Customize the code as needed.
+
+
+```javascript
+import workletURL from './worklet.js?url';
+
+let nextStartTime = 0;
+let outputSources = new Set();
+const INPUT_SAMPLE_RATE = 16000;
+const OUTPUT_SAMPLE_RATE = 24000; // Matches Gemini's typical output
+
+const inputAudioContext = new window.AudioContext({ sampleRate: INPUT_SAMPLE_RATE });
+const outputAudioContext = new window.AudioContext({ sampleRate: OUTPUT_SAMPLE_RATE });
+
+
+async function startSession() {
+    const ai = new GoogleGenAI();
+
+    try {
+      await outputAudioContext.resume();
+
+      session = await ai.live.connect({
+        model: model,
+        callbacks: {
+          onopen: async function () {
+            console.debug('Connection Opened');
+          },
+          onmessage: async function (message) {
+            if (message.toolCall) {
+              const functionCall = message.toolCall.functionCalls[0];
+              console.log(`Function to call: ${functionCall.name}, Arguments: ${functionCall.args}`);
+              // Handle tool calls
+            }
+
+            if (message.serverContent?.modelTurn?.parts) {
+              for (const part of message.serverContent.modelTurn.parts) {
+                if (part.text) {
+                  console.debug('Received text: %s\n', part.text);
+                } else if (part.inlineData?.mimeType.startsWith('audio/')) {
+                  try {
+
+                    const audioDataBytes = decodeBase64(part.inlineData.data);
+                    const audioBuffer = await decodeReceivedAudioData(
+                      audioDataBytes,
+                      outputAudioContext,
+                      OUTPUT_SAMPLE_RATE,
+                      1
+                    );
+
+                    const source = outputAudioContext.createBufferSource();
+                    source.buffer = audioBuffer;
+                    source.connect(outputAudioContext.destination);
+                    const currentTime = outputAudioContext.currentTime;
+                    if (nextStartTime < currentTime) {
+                      nextStartTime = currentTime;
+                    }
+                    source.start(nextStartTime);
+                    nextStartTime += audioBuffer.duration;
+
+                    outputSources.add(source);
+                    source.onended = () => {
+                      outputSources.delete(source);
+                    };
+
+                  } catch (e) {
+                    console.error('Error processing or playing received audio chunk:', e);
+                  }
+                }
+              }
+            }
+
+            if (message.serverContent?.interrupted) {
+              console.log('Audio output interrupted by user.');
+              for (const source of outputSources) {
+                try {
+                  source.stop();
+                } catch (e) {
+                }
+              }
+              outputSources.clear();
+              nextStartTime = outputAudioContext ? outputAudioContext.currentTime : 0;
+            }
+
+            if (message.serverContent?.error) {
+              console.error('Server error in message:', message.serverContent.error);
+            }
+          },
+          onerror: function (e) {
+            console.error('Connection Error');
+          },
+          onclose: function (e) {
+            console.debug('Connection Closed');
+          },
+        },
+        config: genAIConfig,
+      });
+
+      await startStreamingAudio(); // This will also update status to streaming
+
+    } catch (e) {
+      console.error('Failed to connect:=');
+    }
+});
+
+async function startStreamingAudio() {
+    await inputAudioContext.resume();
+
+    const mediaStream = await navigator.mediaDevices.getUserMedia({
+      audio: {
+        sampleRate: INPUT_SAMPLE_RATE,
+        channelCount: 1
+      },
+      video: false
+    });
+
+    const inputSourceNode = inputAudioContext.createMediaStreamSource(mediaStream);
+
+    // Add the AudioWorklet module
+    await inputAudioContext.audioWorklet.addModule(workletURL);
+    const audioWorkletNode = new AudioWorkletNode(inputAudioContext, 'audio-capture-processor');
+
+    audioWorkletNode.port.onmessage = (event) => {
+      const pcmData = event.data; // Float32Array PCM data from our worklet
+      const audioDataToSend = encodeAudioDataForSending(pcmData);
+      session.sendRealtimeInput({ media: audioDataToSend });
+    };
+
+    inputSourceNode.connect(audioWorkletNode);
+    audioWorkletNode.connect(inputAudioContext.destination);
+}
+
+```
+
+Give below is the Audio Worklet
+
+worklet.js
+```javascript
+class AudioCaptureProcessor extends AudioWorkletProcessor {
+  constructor() {
+    super();
+    this.bufferSize = 4096;
+    this.buffer = new Float32Array(this.bufferSize);
+    this.bufferIndex = 0;
+  }
+
+  process(inputs, outputs, parameters) {
+    const input = inputs[0];
+    if (input && input.length > 0) {
+      const pcmData = input[0];
+      
+      for (let i = 0; i < pcmData.length; i++) {
+        this.buffer[this.bufferIndex++] = pcmData[i];
+        
+        if (this.bufferIndex >= this.bufferSize) {
+          // Send full buffer
+          this.port.postMessage(this.buffer.slice(0));
+          this.bufferIndex = 0;
+        }
+      }
+    }
+    return true;
+  }
+}
+
+registerProcessor('audio-capture-processor', AudioCaptureProcessor);
+```
