@@ -1521,6 +1521,7 @@ async function startSession() {
 
     try {
       await outputAudioContext.resume();
+      nextStartTime = outputAudioContext.currentTime;
 
       session = await ai.live.connect({
         model: model,
