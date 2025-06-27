@@ -29,7 +29,7 @@ If you're building an audio-based use case, your choice of model determines the 
     Native audio is supported by the following native audio models:
     *   `gemini-2.5-flash-preview-native-audio-dialog`
     *   `gemini-2.5-flash-exp-native-audio-thinking-dialog`
-*   **Half-cascade audio with Gemini 2.0 Flash**: This option, available with the `gemini-2.0-flash-live-001` model, uses a cascaded model architecture (native audio input and text-to-speech output). It offers better performance and reliability in production environments, especially with tool use.
+*   **Half-cascade audio with Gemini 2.0 Flash**: This option, available with the `gemini-live-2.5-flash-preview` model, uses a cascaded model architecture (native audio input and text-to-speech output). It offers better performance and reliability in production environments, especially with tool use.
 
 ## Get started
 
@@ -1469,7 +1469,7 @@ import { GoogleGenAI, Modality } from '@google/genai';
 
 // Use the token generated in the "Create an ephemeral token" section here
 const ai = new GoogleGenAI({ apiKey: token.name });
-const model = 'gemini-2.0-flash-live-001';
+const model = 'gemini-live-2.5-flash-preview';
 const config = { responseModalities: [Modality.TEXT] };
 
 async function main() {
@@ -1517,7 +1517,7 @@ const outputAudioContext = new window.AudioContext({ sampleRate: OUTPUT_SAMPLE_R
 
 
 async function startSession() {
-    const ai = new GoogleGenAI();
+    const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY, apiVersion: 'v1alpha' });
 
     try {
       await outputAudioContext.resume();
