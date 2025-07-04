@@ -27,3 +27,5 @@ for epoch in range(10):
         loss.backward()
         optimizer.step()
 ```
+
+DO NOT use `GradScaler` since we are using `dtype=torch.bfloat16`
