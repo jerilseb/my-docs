@@ -30,3 +30,17 @@ for epoch in range(10):
 ```
 
 DO NOT use `GradScaler` since we are using `dtype=torch.bfloat16`
+
+- Define the model in a separate file named `model.py`. For example
+
+```python
+import torch.nn as nn
+
+class SimpleCNN(nn.Module):
+    def __init__(self):
+        super(SimpleCNN, self).__init__()
+        ...
+
+    def forward(self, x):
+        ...
+```
