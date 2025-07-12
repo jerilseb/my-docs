@@ -8,7 +8,7 @@
 For example,
 
 ```python
-from torch.cuda.amp import autocast
+from torch import autocast
 
 device = torch.device("cuda")
 model = SimpleModel().to(device)
