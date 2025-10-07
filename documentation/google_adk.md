@@ -121,7 +121,7 @@ def get_current_time(city: str) -> dict:
 
 root_agent = Agent(
     name="weather_time_agent",
-    model="gemini-2.0-flash",
+    model="gemini-2.5-flash",
     description=(
         "Agent to answer questions about the time and weather in a city."
     ),
@@ -232,7 +232,7 @@ You can then replace the `model` string in `root_agent` in the `agent.py` file y
 ```
 root_agent = Agent(
     name="weather_time_agent",
-    model="replace-me-with-model-id", #e.g. gemini-2.0-flash-live-001
+    model="replace-me-with-model-id", #e.g. gemini-2.5-flash-live-001
     ...
 ```
 
@@ -356,7 +356,7 @@ tells the agent:
 ```
 # Example: Adding instructions
 capital_agent = LlmAgent(
-    model="gemini-2.0-flash",
+    model="gemini-2.5-flash",
     name="capital_agent",
     description="Answers user questions about the capital city of a given country.",
     instruction="""You are an agent that provides the capital city of a country.
@@ -397,7 +397,7 @@ def get_capital_city(country: str) -> str:
 
 # Add the tool to the agent
 capital_agent = LlmAgent(
-    model="gemini-2.0-flash",
+    model="gemini-2.5-flash",
     name="capital_agent",
     description="Answers user questions about the capital city of a given country.",
     instruction="""You are an agent that provides the capital city of a country... (previous instruction text)""",
@@ -510,7 +510,7 @@ from google.adk import Agent
 from google.adk.planners import PlanReActPlanner
 
 my_agent = Agent(
-    model="gemini-2.0-flash",
+    model="gemini-2.5-flash",
     planner=PlanReActPlanner(),
     # ... your tools here
 )
@@ -660,19 +660,6 @@ Code
 Here's the complete basic `capital_agent` :
 
 ```
-# Copyright 2025 Google LLC
-
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-
-#     http://www.apache.org/licenses/LICENSE-2.0
-
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
 
 # --- Full example code demonstrating LlmAgent with Tools vs. Output Schema ---
 import json # Needed for pretty printing dicts
@@ -689,7 +676,7 @@ APP_NAME = "agent_comparison_app"
 USER_ID = "test_user_456"
 SESSION_ID_TOOL_AGENT = "session_tool_agent_xyz"
 SESSION_ID_SCHEMA_AGENT = "session_schema_agent_xyz"
-MODEL_NAME = "gemini-2.0-flash"
+MODEL_NAME = "gemini-2.5-flash"
 
 # --- 2. Define Schemas ---
 
@@ -1152,7 +1139,7 @@ USER_ID = "dev_user_01"
 
 SESSION_ID_BASE = "loop_exit_tool_session" # New Base Session ID
 
-GEMINI_MODEL = "gemini-2.0-flash"
+GEMINI_MODEL = "gemini-2.5-flash"
 
 STATE_INITIAL_TOPIC = "initial_topic"
 
@@ -1635,13 +1622,13 @@ The foundation for structuring multi-agent systems is the parent-child relations
 from google.adk.agents import LlmAgent, BaseAgent
 
 # Define individual agents
-greeter = LlmAgent(name="Greeter", model="gemini-2.0-flash")
+greeter = LlmAgent(name="Greeter", model="gemini-2.5-flash")
 task_doer = BaseAgent(name="TaskExecutor") # Custom non-LLM agent
 
 # Create parent agent and assign children via sub_agents
 coordinator = LlmAgent(
     name="Coordinator",
-    model="gemini-2.0-flash",
+    model="gemini-2.5-flash",
     description="I coordinate greetings and tasks.",
     sub_agents=[ # Assign sub_agents here
         greeter,
@@ -1763,7 +1750,7 @@ info_agent = LlmAgent(name="Info", description="Provides general information and
 
 coordinator = LlmAgent(
     name="Coordinator",
-    model="gemini-2.0-flash",
+    model="gemini-2.5-flash",
     instruction="You are an assistant. Delegate booking tasks to Booker and info requests to Info.",
     description="Main coordinator.",
     # AutoFlow is typically used implicitly here
@@ -1806,7 +1793,7 @@ image_tool = agent_tool.AgentTool(agent=image_agent) # Wrap the agent
 # Parent agent uses the AgentTool
 artist_agent = LlmAgent(
     name="Artist",
-    model="gemini-2.0-flash",
+    model="gemini-2.5-flash",
     instruction="Create a prompt and use the ImageGen tool to generate the image.",
     tools=[image_tool] # Include the AgentTool
 )
@@ -1839,7 +1826,7 @@ support_agent = LlmAgent(name="Support", description="Handles technical support 
 
 coordinator = LlmAgent(
     name="HelpDeskCoordinator",
-    model="gemini-2.0-flash",
+    model="gemini-2.5-flash",
     instruction="Route user requests: Use Billing agent for payment issues, Support agent for technical problems.",
     description="Main help desk router.",
     # allow_transfer=True is often implicit with sub_agents in AutoFlow
@@ -1927,7 +1914,7 @@ summarizer = LlmAgent(name="Summarizer", description="Summarizes text.")
 # Mid-level agent combining tools
 research_assistant = LlmAgent(
     name="ResearchAssistant",
-    model="gemini-2.0-flash",
+    model="gemini-2.5-flash",
     description="Finds and summarizes information on a topic.",
     tools=[agent_tool.AgentTool(agent=web_searcher), agent_tool.AgentTool(agent=summarizer)]
 )
@@ -1935,7 +1922,7 @@ research_assistant = LlmAgent(
 # High-level agent delegating research
 report_writer = LlmAgent(
     name="ReportWriter",
-    model="gemini-2.0-flash",
+    model="gemini-2.5-flash",
     instruction="Write a report on topic X. Use the ResearchAssistant to gather information.",
     tools=[agent_tool.AgentTool(agent=research_assistant)]
     # Alternatively, could use LLM Transfer if research_assistant is a sub_agent
@@ -2234,7 +2221,7 @@ tool to reply to user requests.
 
 name: search_agent
 
-model: gemini-2.0-flash
+model: gemini-2.5-flash
 
 description: 'an agent whose job it is to perform Google search queries and answer questions about the results.'
 
@@ -2441,19 +2428,6 @@ Furthermore, ADK supports the sequential use of tools, where the output of one t
 The following example showcases how an agent can use tools by **referencing their function names in its instructions** . It also demonstrates how to guide the agent to **handle different return values from tools** , such as success or error messages, and how to orchestrate the **sequential use of multiple tools** to accomplish a task.
 
 ```
-# Copyright 2025 Google LLC
-
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-
-#     http://www.apache.org/licenses/LICENSE-2.0
-
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
 
 import asyncio
 from google.adk.agents import Agent
@@ -2465,7 +2439,7 @@ from google.genai import types
 APP_NAME="weather_sentiment_agent"
 USER_ID="user1234"
 SESSION_ID="1234"
-MODEL_ID="gemini-2.0-flash"
+MODEL_ID="gemini-2.5-flash"
 
 # Tool 1
 def get_weather_report(city: str) -> dict:
@@ -2602,19 +2576,6 @@ The `tool_context.actions` attribute ( `ToolContext.actions()` in Java) holds an
 #### Example
 
 ```
-# Copyright 2025 Google LLC
-
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-
-#     http://www.apache.org/licenses/LICENSE-2.0
-
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
 
 from google.adk.agents import Agent
 from google.adk.tools import FunctionTool
@@ -2639,14 +2600,14 @@ def check_and_transfer(query: str, tool_context: ToolContext) -> str:
 escalation_tool = FunctionTool(func=check_and_transfer)
 
 main_agent = Agent(
-    model='gemini-2.0-flash',
+    model='gemini-2.5-flash',
     name='main_agent',
     instruction="""You are the first point of contact for customer support of an analytics tool. Answer general queries. If the user indicates urgency, use the 'check_and_transfer' tool.""",
     tools=[check_and_transfer]
 )
 
 support_agent = Agent(
-    model='gemini-2.0-flash',
+    model='gemini-2.5-flash',
     name='support_agent',
     instruction="""You are the dedicated support agent. Mentioned you are a support handler and please help the user with their urgent issue."""
 )
@@ -2711,19 +2672,6 @@ Queries the user's long-term memory using the configured `memory_service` . This
 #### Example
 
 ```
-# Copyright 2025 Google LLC
-
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-
-#     http://www.apache.org/licenses/LICENSE-2.0
-
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
 
 from google.adk.tools import ToolContext, FunctionTool
 from google.genai import types
@@ -2970,7 +2918,7 @@ math_toolset_instance = SimpleMathToolset(prefix="calculator_")
 # 5. Define an agent that uses both the individual tool and the toolset
 calculator_agent = LlmAgent(
     name="CalculatorAgent",
-    model="gemini-2.0-flash",  # Replace with your desired model
+    model="gemini-2.5-flash",  # Replace with your desired model
     instruction="You are a helpful calculator and greeter. "
     "Use 'greet_user' for greetings. "
     "Use 'calculator_add_numbers' to add and 'calculator_subtract_numbers' to subtract. "
@@ -3116,19 +3064,6 @@ This tool is a python function which obtains the Stock price of a given Stock ti
 Note: You need to `pip install yfinance` library before using this tool.
 
 ```
-# Copyright 2025 Google LLC
-
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-
-#     http://www.apache.org/licenses/LICENSE-2.0
-
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
 
 from google.adk.agents import Agent
 from google.adk.runners import Runner
@@ -3164,7 +3099,7 @@ def get_stock_price(symbol: str):
         return None
 
 stock_price_agent = Agent(
-    model='gemini-2.0-flash',
+    model='gemini-2.5-flash',
     name='stock_agent',
     instruction= 'You are an agent who retrieves stock prices. If a ticker symbol is provided, fetch the current price. If only a company name is given, first perform a Google search to find the correct ticker symbol before retrieving the stock price. If the provided ticker symbol is invalid or data cannot be retrieved, inform the user that the stock price could not be found.',
     description='This agent specializes in retrieving real-time stock prices. Given a stock ticker symbol (e.g., AAPL, GOOG, MSFT) or the stock name, use the tools and reliable data sources to provide the most up-to-date price.',
@@ -3362,20 +3297,6 @@ async def call_agent_async(query):
 
 Python complete example: File Processing Simulation
 ```
-# Copyright 2025 Google LLC
-
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-
-#     http://www.apache.org/licenses/LICENSE-2.0
-
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 import asyncio
 from typing import Any
 from google.adk.agents import Agent
@@ -3405,7 +3326,7 @@ long_running_tool = LongRunningFunctionTool(func=ask_for_approval)
 # 3. Use the tool in an Agent
 file_processor_agent = Agent(
     # Use a model compatible with function calling
-    model="gemini-2.0-flash",
+    model="gemini-2.5-flash",
     name='reimbursement_agent',
     instruction="""
       You are an agent whose job is to handle the reimbursement process for
@@ -3536,19 +3457,6 @@ The `AgentTool` class provides the following attributes for customizing its beha
 - **skip_summarization: bool:** If set to True, the framework will **bypass the LLM-based summarization** of the tool agent's response. This can be useful when the tool's response is already well-formatted and requires no further processing.
 Example
 ```
-# Copyright 2025 Google LLC
-
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-
-#     http://www.apache.org/licenses/LICENSE-2.0
-
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
 
 from google.adk.agents import Agent
 from google.adk.runners import Runner
@@ -3561,14 +3469,14 @@ USER_ID="user1234"
 SESSION_ID="1234"
 
 summary_agent = Agent(
-    model="gemini-2.0-flash",
+    model="gemini-2.5-flash",
     name="summary_agent",
     instruction="""You are an expert summarizer. Please read the following text and provide a concise summary.""",
     description="Agent to summarize text",
 )
 
 root_agent = Agent(
-    model='gemini-2.0-flash',
+    model='gemini-2.5-flash',
     name='root_agent',
     instruction="""You are a helpful assistant. When the user provides a text, use the 'summarize' tool to generate a summary. Always forward the user's message exactly as received to the 'summarize' tool, without modifying or summarizing it yourself. Present the response from the tool to the user.""",
     tools=[AgentTool(agent=summary_agent, skip_summarization=True)]
@@ -3997,11 +3905,6 @@ The tool confirmation feature has the following limitations:
 - DatabaseSessionService is not supported by this feature.
 - VertexAiSessionService is not supported by this feature.
 
-## Next steps
-
-For more information on building ADK tools for agent workflows, see Function
-tools .
-
 -----------------
 
 # Built-in tools
@@ -4034,19 +3937,6 @@ When you use grounding with Google Search, and you receive Search suggestions in
 For more information on grounding with Google Search, see Grounding with Google Search documentation for Google AI Studio or Vertex AI . The UI code (HTML) is returned in the Gemini response as `renderedContent` , and you will need to show the HTML in your app, in accordance with the policy.
 
 ```
-# Copyright 2025 Google LLC
-
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-
-#     http://www.apache.org/licenses/LICENSE-2.0
-
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
 
 from google.adk.agents import Agent
 from google.adk.runners import Runner
@@ -4060,7 +3950,7 @@ SESSION_ID="1234"
 
 root_agent = Agent(
     name="basic_search_agent",
-    model="gemini-2.0-flash",
+    model="gemini-2.5-flash",
     description="Agent to answer questions using Google Search.",
     instruction="I can answer your questions by searching the internet. Just ask me anything!",
     # google_search is a pre-built tool which allows the agent to perform Google searches.
@@ -4097,19 +3987,6 @@ specifically when using Gemini 2 models. This allows the model to perform tasks
 like calculations, data manipulation, or running small scripts.
 
 ```
-# Copyright 2025 Google LLC
-
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-
-#     http://www.apache.org/licenses/LICENSE-2.0
-
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
 
 import asyncio
 from google.adk.agents import LlmAgent
@@ -4122,7 +3999,7 @@ AGENT_NAME = "calculator_agent"
 APP_NAME = "calculator"
 USER_ID = "user1234"
 SESSION_ID = "session_code_exec_async"
-GEMINI_MODEL = "gemini-2.0-flash"
+GEMINI_MODEL = "gemini-2.5-flash"
 
 # Agent Definition
 code_agent = LlmAgent(
@@ -4228,7 +4105,7 @@ from google.adk.tools import google_search
 from google.adk.code_executors import BuiltInCodeExecutor
 
 search_agent = Agent(
-    model='gemini-2.0-flash',
+    model='gemini-2.5-flash',
     name='SearchAgent',
     instruction="""
     You're a specialist in Google Search
@@ -4236,7 +4113,7 @@ search_agent = Agent(
     tools=[google_search],
 )
 coding_agent = Agent(
-    model='gemini-2.0-flash',
+    model='gemini-2.5-flash',
     name='CodeAgent',
     instruction="""
     You're a specialist in Code Execution
@@ -4245,7 +4122,7 @@ coding_agent = Agent(
 )
 root_agent = Agent(
     name="RootAgent",
-    model="gemini-2.0-flash",
+    model="gemini-2.5-flash",
     description="Root Agent",
     tools=[AgentTool(agent=search_agent), AgentTool(agent=coding_agent)],
 )
@@ -4264,7 +4141,7 @@ For example, the following approach that uses ***a built-in tool along with
 ```
 root_agent = Agent(
     name="RootAgent",
-    model="gemini-2.0-flash",
+    model="gemini-2.5-flash",
     description="Root Agent",
     tools=[custom_function],
     code_executor=BuiltInCodeExecutor() # <-- not supported when used with tools
@@ -4280,7 +4157,7 @@ is **not** currently supported:
 
 ```
 search_agent = Agent(
-    model='gemini-2.0-flash',
+    model='gemini-2.5-flash',
     name='SearchAgent',
     instruction="""
     You're a specialist in Google Search
@@ -4288,7 +4165,7 @@ search_agent = Agent(
     tools=[google_search],
 )
 coding_agent = Agent(
-    model='gemini-2.0-flash',
+    model='gemini-2.5-flash',
     name='CodeAgent',
     instruction="""
     You're a specialist in Code Execution
@@ -4297,7 +4174,7 @@ coding_agent = Agent(
 )
 root_agent = Agent(
     name="RootAgent",
-    model="gemini-2.0-flash",
+    model="gemini-2.5-flash",
     description="Root Agent",
     sub_agents=[
         search_agent,
@@ -4381,7 +4258,7 @@ TARGET_FOLDER_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "/
 # If you created ./adk_agent_samples/mcp_agent/your_folder,
 
 root_agent = LlmAgent(
-    model='gemini-2.0-flash',
+    model='gemini-2.5-flash',
     name='filesystem_assistant_agent',
     instruction='Help the user manage their files. You can list files, read files, etc.',
     tools=[
@@ -4440,108 +4317,6 @@ Once the ADK Web UI loads in your browser:
 
 You should see the agent interacting with the MCP file system server, and the server's responses (file listings, file content) relayed through the agent. The `adk web` console (terminal where you ran the command) might also show logs from the `npx` process if it outputs to stderr.
 
-For Java, refer to the following sample to define an agent that initializes the `MCPToolset` :
-
-```
-package agents;
-
-import com.google.adk.JsonBaseModel;
-import com.google.adk.agents.LlmAgent;
-import com.google.adk.agents.RunConfig;
-import com.google.adk.runner.InMemoryRunner;
-import com.google.adk.tools.mcp.McpTool;
-import com.google.adk.tools.mcp.McpToolset;
-import com.google.adk.tools.mcp.McpToolset.McpToolsAndToolsetResult;
-import com.google.genai.types.Content;
-import com.google.genai.types.Part;
-import io.modelcontextprotocol.client.transport.ServerParameters;
-
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-
-public class McpAgentCreator {
-
-    /**
-     * Initializes an McpToolset, retrieves tools from an MCP server using stdio,
-     * creates an LlmAgent with these tools, sends a prompt to the agent,
-     * and ensures the toolset is closed.
-     * @param args Command line arguments (not used).
-     */
-    public static void main(String[] args) {
-        //Note: you may have permissions issues if the folder is outside home
-        String yourFolderPath = "~/path/to/folder";
-
-        ServerParameters connectionParams = ServerParameters.builder("npx")
-                .args(List.of(
-                        "-y",
-                        "@modelcontextprotocol/server-filesystem",
-                        yourFolderPath
-                ))
-                .build();
-
-        try {
-            CompletableFuture<McpToolsAndToolsetResult> futureResult =
-                    McpToolset.fromServer(connectionParams, JsonBaseModel.getMapper());
-
-            McpToolsAndToolsetResult result = futureResult.join();
-
-            try (McpToolset toolset = result.getToolset()) {
-                List<McpTool> tools = result.getTools();
-
-                LlmAgent agent = LlmAgent.builder()
-                        .model("gemini-2.0-flash")
-                        .name("enterprise_assistant")
-                        .description("An agent to help users access their file systems")
-                        .instruction(
-                                "Help user accessing their file systems. You can list files in a directory."
-                        )
-                        .tools(tools)
-                        .build();
-
-                System.out.println("Agent created: " + agent.name());
-
-                InMemoryRunner runner = new InMemoryRunner(agent);
-                String userId = "user123";
-                String sessionId = "1234";
-                String promptText = "Which files are in this directory - " + yourFolderPath + "?";
-
-                // Explicitly create the session first
-                try {
-                    // appName for InMemoryRunner defaults to agent.name() if not specified in constructor
-                    runner.sessionService().createSession(runner.appName(), userId, null, sessionId).blockingGet();
-                    System.out.println("Session created: " + sessionId + " for user: " + userId);
-                } catch (Exception sessionCreationException) {
-                    System.err.println("Failed to create session: " + sessionCreationException.getMessage());
-                    sessionCreationException.printStackTrace();
-                    return;
-                }
-
-                Content promptContent = Content.fromParts(Part.fromText(promptText));
-
-                System.out.println("\nSending prompt: \"" + promptText + "\" to agent...\n");
-
-                runner.runAsync(userId, sessionId, promptContent, RunConfig.builder().build())
-                        .blockingForEach(event -> {
-                            System.out.println("Event received: " + event.toJson());
-                        });
-            }
-        } catch (Exception e) {
-            System.err.println("An error occurred: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
-}
-```
-
-Assuming a folder containing three files named `first` , `second` and `third` , successful response will look like this:
-
-```
-Event received: {"id":"163a449e-691a-48a2-9e38-8cadb6d1f136","invocationId":"e-c2458c56-e57a-45b2-97de-ae7292e505ef","author":"enterprise_assistant","content":{"parts":[{"functionCall":{"id":"adk-388b4ac2-d40e-4f6a-bda6-f051110c6498","args":{"path":"~/home-test"},"name":"list_directory"}}],"role":"model"},"actions":{"stateDelta":{},"artifactDelta":{},"requestedAuthConfigs":{}},"timestamp":1747377543788}
-
-Event received: {"id":"8728380b-bfad-4d14-8421-fa98d09364f1","invocationId":"e-c2458c56-e57a-45b2-97de-ae7292e505ef","author":"enterprise_assistant","content":{"parts":[{"functionResponse":{"id":"adk-388b4ac2-d40e-4f6a-bda6-f051110c6498","name":"list_directory","response":{"text_output":[{"text":"[FILE] first\n[FILE] second\n[FILE] third"}]}}}],"role":"user"},"actions":{"stateDelta":{},"artifactDelta":{},"requestedAuthConfigs":{}},"timestamp":1747377544679}
-
-Event received: {"id":"8fe7e594-3e47-4254-8b57-9106ad8463cb","invocationId":"e-c2458c56-e57a-45b2-97de-ae7292e505ef","author":"enterprise_assistant","content":{"parts":[{"text":"There are three files in the directory: first, second, and third."}],"role":"model"},"actions":{"stateDelta":{},"artifactDelta":{},"requestedAuthConfigs":{}},"timestamp":1747377544689}
-```
 
 ### Example 2: Google Maps MCP Server
 
@@ -4581,7 +4356,7 @@ if not google_maps_api_key:
         # You might want to raise an error or exit if the key is crucial and not found.
 
 root_agent = LlmAgent(
-    model='gemini-2.0-flash',
+    model='gemini-2.5-flash',
     name='maps_assistant_agent',
     instruction='Help the user with mapping, directions, and finding places using Google Maps tools.',
     tools=[
@@ -4818,7 +4593,7 @@ if PATH_TO_YOUR_MCP_SERVER_SCRIPT == "/path/to/your/my_adk_mcp_server.py":
     # Optionally, raise an error if the path is critical
 
 root_agent = LlmAgent(
-    model='gemini-2.0-flash',
+    model='gemini-2.5-flash',
     name='web_reader_mcp_client_agent',
     instruction="Use the 'load_web_page' tool to fetch content from a URL provided by the user.",
     tools=[
@@ -4927,7 +4702,7 @@ async def get_agent_async():
 
   # Use in an agent
   root_agent = LlmAgent(
-      model='gemini-2.0-flash', # Adjust model name if needed based on availability
+      model='gemini-2.5-flash', # Adjust model name if needed based on availability
       name='enterprise_assistant',
       instruction='Help user accessing their file systems',
       tools=[toolset], # Provide the MCP tools to the ADK agent
@@ -5866,7 +5641,7 @@ from google.adk.agents import LlmAgent
 
 story_generator = LlmAgent(
     name="StoryGenerator",
-    model="gemini-2.0-flash",
+    model="gemini-2.5-flash",
     instruction="""Write a short story about a cat, focusing on the theme: {topic}."""
 )
 
@@ -5900,7 +5675,7 @@ def my_instruction_provider(context: ReadonlyContext) -> str:
     return "This is an instruction with {{literal_braces}} that will not be replaced."
 
 agent = LlmAgent(
-    model="gemini-2.0-flash",
+    model="gemini-2.5-flash",
     name="template_helper_agent",
     instruction=my_instruction_provider
 )
@@ -5919,7 +5694,7 @@ async def my_dynamic_instruction_provider(context: ReadonlyContext) -> str:
     return await instructions_utils.inject_session_state(template, context)
 
 agent = LlmAgent(
-    model="gemini-2.0-flash",
+    model="gemini-2.5-flash",
     name="dynamic_template_helper_agent",
     instruction=my_dynamic_instruction_provider
 )
@@ -5958,7 +5733,7 @@ from google.genai.types import Content, Part
 # Define agent with output_key
 greeting_agent = LlmAgent(
     name="Greeter",
-    model="gemini-2.0-flash", # Use a valid model
+    model="gemini-2.5-flash", # Use a valid model
     instruction="Generate a short, friendly greeting.",
     output_key="last_greeting" # Save response to state['last_greeting']
 )
@@ -6168,7 +5943,7 @@ from google.genai.types import Content, Part
 # --- Constants ---
 APP_NAME = "memory_example_app"
 USER_ID = "mem_user"
-MODEL = "gemini-2.0-flash" # Use a valid model
+MODEL = "gemini-2.5-flash" # Use a valid model
 
 # --- Agent Definitions ---
 # Agent 1: Simple agent to capture information
@@ -6400,7 +6175,7 @@ def my_before_model_logic(
 # --- Register it during Agent creation ---
 my_agent = LlmAgent(
     name="MyCallbackAgent",
-    model="gemini-2.0-flash", # Or your desired model
+    model="gemini-2.5-flash", # Or your desired model
     instruction="Be helpful.",
     # Other agent parameters...
     before_model_callback=my_before_model_logic # Pass the function here
@@ -6438,20 +6213,6 @@ This example demonstrates the common pattern for a guardrail using `before_model
 
 Code
 ```
-# Copyright 2025 Google LLC
-
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-
-#     http://www.apache.org/licenses/LICENSE-2.0
-
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 from google.adk.agents import LlmAgent
 from google.adk.agents.callback_context import CallbackContext
 from google.adk.models import LlmResponse, LlmRequest
@@ -6460,7 +6221,7 @@ from typing import Optional
 from google.genai import types
 from google.adk.sessions import InMemorySessionService
 
-GEMINI_2_FLASH="gemini-2.0-flash"
+GEMINI_2_FLASH="gemini-2.5-flash"
 
 # --- Define the Callback Function ---
 def simple_before_model_modifier(
@@ -6570,19 +6331,6 @@ The specific method names or return types may vary slightly by SDK language (e.g
 
 Code
 ```
-# Copyright 2025 Google LLC
-
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-
-#     http://www.apache.org/licenses/LICENSE-2.0
-
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
 
 # # --- Setup Instructions ---
 # # 1. Install the ADK package:
@@ -6605,7 +6353,7 @@ from google.genai import types # For types.Content
 from typing import Optional
 
 # Define the model - Use the specific model name requested
-GEMINI_2_FLASH="gemini-2.0-flash"
+GEMINI_2_FLASH="gemini-2.5-flash"
 
 # --- 1. Define the Callback Function ---
 def check_if_agent_should_run(callback_context: CallbackContext) -> Optional[types.Content]:
@@ -6730,19 +6478,6 @@ await main()
 
 Code
 ```
-# Copyright 2025 Google LLC
-
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-
-#     http://www.apache.org/licenses/LICENSE-2.0
-
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
 
 # # --- Setup Instructions ---
 # # 1. Install the ADK package:
@@ -6765,7 +6500,7 @@ from google.genai import types # For types.Content
 from typing import Optional
 
 # Define the model - Use the specific model name requested
-GEMINI_2_FLASH="gemini-2.0-flash"
+GEMINI_2_FLASH="gemini-2.5-flash"
 
 # --- 1. Define the Callback Function ---
 def modify_output_after_agent(callback_context: CallbackContext) -> Optional[types.Content]:
@@ -6899,19 +6634,6 @@ If the callback returns `None` (or a `Maybe.empty()` object in Java), the LLM co
 
 Code
 ```
-# Copyright 2025 Google LLC
-
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-
-#     http://www.apache.org/licenses/LICENSE-2.0
-
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
 
 from google.adk.agents import LlmAgent
 from google.adk.agents.callback_context import CallbackContext
@@ -6921,7 +6643,7 @@ from typing import Optional
 from google.genai import types
 from google.adk.sessions import InMemorySessionService
 
-GEMINI_2_FLASH="gemini-2.0-flash"
+GEMINI_2_FLASH="gemini-2.5-flash"
 
 # --- Define the Callback Function ---
 def simple_before_model_modifier(
@@ -7020,19 +6742,6 @@ await call_agent_async("write a joke on BLOCK")
 - or handling specific error codes.
 Code
 ```
-# Copyright 2025 Google LLC
-
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-
-#     http://www.apache.org/licenses/LICENSE-2.0
-
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
 
 from google.adk.agents import LlmAgent
 from google.adk.agents.callback_context import CallbackContext
@@ -7042,7 +6751,7 @@ from google.genai import types
 from google.adk.sessions import InMemorySessionService
 from google.adk.models import LlmResponse
 
-GEMINI_2_FLASH="gemini-2.0-flash"
+GEMINI_2_FLASH="gemini-2.5-flash"
 
 # --- Define the Callback Function ---
 def simple_after_model_modifier(
@@ -7175,7 +6884,7 @@ from google.adk.tools.tool_context import ToolContext
 from google.adk.tools.base_tool import BaseTool
 from typing import Dict, Any
 
-GEMINI_2_FLASH="gemini-2.0-flash"
+GEMINI_2_FLASH="gemini-2.5-flash"
 
 def get_capital_city(country: str) -> str:
     """Retrieves the capital city of a given country."""
@@ -7259,22 +6968,9 @@ await call_agent_async("Canada")
 
 1. If the callback returns `None` (or a `Maybe.empty()` object in Java), the original `tool_response` is used.
 2. If a new dictionary is returned, it **replaces** the original `tool_response` . This allows modifying or filtering the result seen by the LLM.
+
 Code
 ```
-# Copyright 2025 Google LLC
-
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-
-#     http://www.apache.org/licenses/LICENSE-2.0
-
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 from google.adk.agents import LlmAgent
 from google.adk.runners import Runner
 from typing import Optional
@@ -7286,7 +6982,7 @@ from google.adk.tools.base_tool import BaseTool
 from typing import Dict, Any
 from copy import deepcopy
 
-GEMINI_2_FLASH="gemini-2.0-flash"
+GEMINI_2_FLASH="gemini-2.5-flash"
 
 # --- Define a Simple Tool Function (Same as before) ---
 def get_capital_city(country: str) -> str:
