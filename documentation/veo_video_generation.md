@@ -1,5 +1,3 @@
-A new native audio model is available for the Live API. Learn more 
-
 # Generate videos with Veo 3 in Gemini API
 
 Veo 3 is Google's state-of-the-art model
