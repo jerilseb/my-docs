@@ -38,7 +38,7 @@ from google import genai
 client = genai.Client(api_key="YOUR_API_KEY")
 
 response = client.models.generate_content(
-    model="gemini-2.0-flash", contents="Explain how AI works in a few words"
+    model="gemini-2.5-flash", contents="Explain how AI works in a few words"
 )
 print(response.text)
 ```
@@ -56,7 +56,7 @@ from google import genai
 client = genai.Client(api_key="GEMINI_API_KEY")
 
 response = client.models.generate_content(
-    model="gemini-2.0-flash",
+    model="gemini-2.5-flash",
     contents=["How does AI work?"]
 )
 print(response.text)
@@ -74,7 +74,7 @@ from google.genai import types
 client = genai.Client(api_key="GEMINI_API_KEY")
 
 response = client.models.generate_content(
-    model="gemini-2.0-flash",
+    model="gemini-2.5-flash",
     config=types.GenerateContentConfig(
         system_instruction="You are a cat. Your name is Neko."),
     contents="Hello there"
@@ -92,7 +92,7 @@ from google.genai import types
 client = genai.Client(api_key="GEMINI_API_KEY")
 
 response = client.models.generate_content(
-    model="gemini-2.0-flash",
+    model="gemini-2.5-flash",
     contents=["Explain how AI works"],
     config=types.GenerateContentConfig(
         max_output_tokens=,
@@ -118,7 +118,7 @@ client = genai.Client(api_key="GEMINI_API_KEY")
 
 image = Image.open("/path/to/organ.png")
 response = client.models.generate_content(
-    model="gemini-2.0-flash",
+    model="gemini-2.5-flash",
     contents=[image, "Tell me about this instrument"]
 )
 print(response.text)
@@ -142,7 +142,7 @@ from google import genai
 client = genai.Client(api_key="GEMINI_API_KEY")
 
 response = client.models.generate_content_stream(
-    model="gemini-2.0-flash",
+    model="gemini-2.5-flash",
     contents=["Explain how AI works"]
 )
 for chunk in response:
@@ -162,7 +162,7 @@ scenes, it still uses the  `generateContent`  API.
 from google import genai
 
 client = genai.Client(api_key="GEMINI_API_KEY")
-chat = client.chats.create(model="gemini-2.0-flash")
+chat = client.chats.create(model="gemini-2.5-flash")
 
 response = chat.send_message("I have 2 dogs in my house.")
 print(response.text)
@@ -181,7 +181,7 @@ Streaming can also be used for multi-turn conversations.
 from google import genai
 
 client = genai.Client(api_key="GEMINI_API_KEY")
-chat = client.chats.create(model="gemini-2.0-flash")
+chat = client.chats.create(model="gemini-2.5-flash")
 
 response = chat.send_message_stream("I have 2 dogs in my house.")
 for chunk in response:
@@ -247,7 +247,7 @@ class Recipe(BaseModel):
 
 client = genai.Client(api_key="GOOGLE_API_KEY")
 response = client.models.generate_content(
-    model="gemini-2.0-flash",
+    model="gemini-2.5-flash",
     contents="List a few popular cookie recipes, and include the amounts of ingredients.",
     config={
         "response_mime_type": "application/json",
@@ -312,7 +312,7 @@ class Instrument(enum.Enum):
 
 client = genai.Client(api_key="GEMINI_API_KEY")
 response = client.models.generate_content(
-    model='gemini-2.0-flash',
+    model='gemini-2.5-flash',
     contents='What type of instrument is an oboe?',
     config={
         'response_mime_type': 'text/x.enum',
@@ -341,7 +341,7 @@ from google import genai
 
 client = genai.Client(api_key="GEMINI_API_KEY")
 response = client.models.generate_content(
-    model='gemini-2.0-flash',
+    model='gemini-2.5-flash',
     contents='What type of instrument is an oboe?',
     config={
         'response_mime_type': 'text/x.enum',
@@ -380,7 +380,7 @@ class Recipe(BaseModel):
 
 client = genai.Client(api_key="GEMINI_API_KEY")
 response = client.models.generate_content(
-    model='gemini-2.0-flash',
+    model='gemini-2.5-flash',
     contents='List 10 home-baked cookie recipes and give them grades based on tastiness.',
     config={
         'response_mime_type': 'application/json',
@@ -591,7 +591,7 @@ config = types.GenerateContentConfig(tools=[tools])
 
 # Send request with function declarations
 response = client.models.generate_content(
-    model="gemini-2.0-flash",
+    model="gemini-2.5-flash",
     contents="What's the temperature in London?",
     config=config,
 )
@@ -705,7 +705,7 @@ contents = [
 
 # Send request with function declarations
 response = client.models.generate_content(
-    model="gemini-2.0-flash", config=config, contents=contents
+    model="gemini-2.5-flash", config=config, contents=contents
 )
 
 print(response.candidates[].content.parts[0].function_call)
@@ -749,7 +749,7 @@ contents.append(types.Content(role="model", parts=[types.Part(function_call=tool
 contents.append(types.Content(role="user", parts=[function_response_part])) # Append the function response
 
 final_response = client.models.generate_content(
-    model="gemini-2.0-flash",
+    model="gemini-2.5-flash",
     config=config,
     contents=contents,
 )
@@ -853,7 +853,7 @@ config = {
 # Configure the client
 client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
-chat = client.chats.create(model="gemini-2.0-flash", config=config)
+chat = client.chats.create(model="gemini-2.5-flash", config=config)
 response = chat.send_message("Turn this place into a party!")
 
 # Print out each of the function calls requested from this single call
@@ -914,7 +914,7 @@ config = {
     "tools": [power_disco_ball_impl, start_music_impl, dim_lights_impl],
 }
 
-chat = client.chats.create(model="gemini-2.0-flash", config=config)
+chat = client.chats.create(model="gemini-2.5-flash", config=config)
 response = chat.send_message("Do everything you need to this place into party!")
 
 print("\nExample 2: Automatic function calling")
@@ -1007,7 +1007,7 @@ config = types.GenerateContentConfig(
 
 # Make the request
 response = client.models.generate_content(
-    model="gemini-2.0-flash",
+    model="gemini-2.5-flash",
     contents="What's the temperature in Boston?",
     config=config,
 )
@@ -1118,7 +1118,7 @@ async def run():
             await session.initialize()
             # Send request to the model with MCP function declarations
             response = await client.aio.models.generate_content(
-                model="gemini-2.0-flash",
+                model="gemini-2.5-flash",
                 contents=prompt,
                 config=genai.types.GenerateContentConfig(
                     temperature=,
@@ -1200,7 +1200,7 @@ client = genai.Client(api_key="GOOGLE_API_KEY")
 myfile = client.files.upload(file="path/to/sample.mp3")
 
 response = client.models.generate_content(
-    model="gemini-2.0-flash", contents=["Describe this audio clip", myfile]
+    model="gemini-2.5-flash", contents=["Describe this audio clip", myfile]
 )
 
 print(response.text)
