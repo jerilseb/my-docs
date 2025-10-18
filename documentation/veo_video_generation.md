@@ -23,7 +23,7 @@ prompt = """A close up of two people staring at a cryptic drawing on a wall, tor
 A man murmurs, 'This must be it. That's the secret code.' The woman looks at him and whispering excitedly, 'What did you find?'"""
 
 operation = client.models.generate_videos(
-    model="veo-3.0-generate-001",
+    model="veo-3.1-fast-generate-preview",
     prompt=prompt,
 )
 
@@ -63,7 +63,7 @@ imagen = client.models.generate_images(
 
 # Step 2: Generate video with Veo 3 using the image.
 operation = client.models.generate_videos(
-    model="veo-3.0-generate-001",
+    model="veo-3.1-fast-generate-preview",
     prompt=prompt,
     image=imagen.generated_images[].image,
 )
@@ -121,7 +121,7 @@ from google.genai import types
 client = genai.Client()
 
 operation = client.models.generate_videos(
-    model="veo-3.0-generate-001",
+    model="veo-3.1-fast-generate-preview",
     prompt="A cinematic shot of a majestic lion in the savannah.",
     config=types.GenerateVideosConfig(negative_prompt="cartoon, drawing, low quality"),
 )
@@ -159,7 +159,7 @@ client = genai.Client()
 
 # After starting the job, you get an operation object.
 operation = client.models.generate_videos(
-    model="veo-3.0-generate-001",
+    model="veo-3.1-fast-generate-preview",
     prompt="A cinematic shot of a majestic lion in the savannah.",
 )
 
@@ -414,7 +414,7 @@ Veo 3 Fast allows developers to create videos with sound while maintaining high 
 | --- | --- |
 | id_cardModel code | Gemini API
 
-veo-3.0-fast-generate-001 |
+veo-3.1-fast-generate-preview |
 | saveSupported data types | Input
 
 Text, Image
