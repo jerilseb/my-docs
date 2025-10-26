@@ -512,6 +512,7 @@ class ClaudeAgentOptions:
 | include_partial_messages | bool | False | Include partial message streaming events |
 | fork_session | bool | False | When resuming with resume, fork to a new session ID instead of continuing the original session |
 | agents | dict[str, AgentDefinition] \| None | None | Programmatically defined subagents |
+| plugins | list[SdkPluginConfig] | [] | Load custom plugins from local paths. See Plugins for details |
 | setting_sources | list[SettingSource] \| None | None (no settings) | Control which filesystem settings to load. When omitted, no settings are loaded. Note: Must include "project" to load CLAUDE.md files |
 
 ### ​SystemPromptPreset
@@ -720,6 +721,31 @@ class McpHttpServerConfig(TypedDict):
     headers: NotRequired[dict[str, str]]
 ```
 
+### ​SdkPluginConfig
+
+Configuration for loading plugins in the SDK.
+
+```
+class SdkPluginConfig(TypedDict):
+    type: Literal["local"]
+    path: str
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| type | Literal["local"] | Must be "local" (only local plugins currently supported) |
+| path | str | Absolute or relative path to the plugin directory |
+
+**Example:**
+
+```
+plugins=[
+    {"type": "local", "path": "./my-plugin"},
+    {"type": "local", "path": "/absolute/path/to/plugin"}
+]
+```
+
+For complete information on creating and using plugins, see Plugins .
 ## ​Message Types
 
 ### ​Message
@@ -1078,33 +1104,6 @@ Documentation of input/output schemas for all built-in Claude Code tools. While 
     "message": str,      # Confirmation message
     "replacements": int, # Number of replacements made
     "file_path": str     # File path that was edited
-}
-```
-
-### ​MultiEdit
-
-**Tool name:**  `MultiEdit`**Input:**
-
-```
-{
-    "file_path": str,     # The absolute path to the file to modify
-    "edits": [            # Array of edit operations
-        {
-            "old_string": str,          # The text to replace
-            "new_string": str,          # The text to replace it with
-            "replace_all": bool | None  # Replace all occurrences
-        }
-    ]
-}
-```
-
-**Output:**
-
-```
-{
-    "message": str,       # Success message
-    "edits_applied": int, # Total number of edits applied
-    "file_path": str      # File path that was edited
 }
 ```
 
@@ -1514,7 +1513,7 @@ async def main():
 # Example conversation:
 # Turn 1 - You: "Create a file called hello.py"
 # Turn 1 - Claude: "I'll create a hello.py file for you..."
-# Turn 2 - You: "What's in that file?"  
+# Turn 2 - You: "What's in that file?"
 # Turn 2 - Claude: "The hello.py file I just created contains..." (remembers!)
 # Turn 3 - You: "Add a main function to it"
 # Turn 3 - Claude: "I'll add a main function to hello.py..." (knows which file!)
